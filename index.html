@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Google OAuth Setup for RapidIdentity SMTP</title>
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-50 text-gray-800 antialiased">
+    <!--==============  HEADER  ==============-->
+    <header class="bg-sky-700 text-white shadow">
+      <div class="max-w-7xl mx-auto flex items-center justify-between px-4 py-6">
+        <h1 class="text-2xl font-semibold tracking-wide">Google OAuth Setup for RapidIdentity SMTP</h1>
+        <nav class="hidden md:flex space-x-6 text-sm font-medium">
+          <a href="#enable-gmail-api" class="hover:underline">Enable Gmail API</a>
+          <a href="#configure-oauth-consent-screen" class="hover:underline">Configure OAuth Consent Screen</a>
+          <a href="#create-oauth-client" class="hover:underline">Create OAuth Client</a>
+          <a href="#generate-oauth-refresh-token" class="hover:underline">Generate OAuth Refresh Token</a>
+          <a href="#update-rapididentity-action-set" class="hover:underline">Update RapidIdentity Action Set</a>
+        </nav>
+      </div>
+    </header>
+
+    <!--==============  MAIN CONTENT  ==============-->
+    <main class="max-w-4xl mx-auto px-4 py-12 space-y-20">
+      <!-- ===== Section 1 ===== -->
+      <section id="enable-gmail-api" class="space-y-6">
+        <h2 class="text-xl font-semibold text-sky-700 flex items-center">
+          <span class="mr-2">1.</span> Enable Gmail API
+        </h2>
+        <p>Turn on the Gmail API in the Google Cloud project that RapidIdentity will use for SMTP.</p>
+        <ol class="list-decimal list-inside space-y-2 pl-4">
+          <li>Open <strong>Google Cloud Console</strong> and create a new project (or select an existing one).</li>
+          <li>
+            In the search bar enter <strong>APIs &amp; Services</strong> and select it.<br/>
+            <img src="assets/Pasted image 20250605083838.png" alt="Google Cloud Console showing APIs &amp; Services search" class="my-2 rounded shadow"/>
+          </li>
+          <li>In the left sidebar choose <strong>Library</strong>.</li>
+          <li>
+            Locate the <strong>Gmail API</strong> card, open it, and click <strong>Enable</strong>.<br/>
+            <img src="assets/Pasted image 20250605084023.png" alt="Enable Gmail API button" class="my-2 rounded shadow"/>
+          </li>
+          <li>
+            After enabling the API, use your browser’s Back button to return to the Gmail API details page.<br/>
+            <img src="assets/Pasted image 20250605084238.png" alt="Gmail API details page" class="my-2 rounded shadow"/>
+          </li>
+        </ol>
+      </section>
+
+      <!-- ===== Section 2 ===== -->
+      <section id="configure-oauth-consent-screen" class="space-y-6">
+        <h2 class="text-xl font-semibold text-sky-700 flex items-center">
+          <span class="mr-2">2.</span> Configure OAuth Consent Screen
+        </h2>
+        <p>Register an internal app so Google can issue OAuth tokens for RapidIdentity.</p>
+        <ol class="list-decimal list-inside space-y-2 pl-4">
+          <li>In the sidebar select <strong>OAuth consent screen</strong> and click <strong>Get started</strong> if you have not configured one yet.</li>
+          <li>Enter an app name, for example <strong>RapidIdentity SMTP</strong>.</li>
+          <li>Provide a support email address.</li>
+          <li>When prompted for <em>User Type</em>, choose <strong>Internal</strong>.</li>
+        </ol>
+      </section>
+
+      <!-- ===== Section 3 ===== -->
+      <section id="create-oauth-client" class="space-y-6">
+        <h2 class="text-xl font-semibold text-sky-700 flex items-center">
+          <span class="mr-2">3.</span> Create OAuth Client
+        </h2>
+        <p>Create OAuth client credentials that RapidIdentity (or OAuth Playground) will use to obtain a refresh token.</p>
+        <ol class="list-decimal list-inside space-y-2 pl-4">
+          <li>Return to <strong>APIs &amp; Services → Credentials</strong>.</li>
+          <li>Click <strong>+ Create credentials</strong> and select <strong>OAuth client ID</strong>.</li>
+          <li>For <em>Application type</em> choose <strong>Web application</strong> and give it a name (e.g., <strong>RapidIdentity SMTP Client</strong>).</li>
+          <li>Under <strong>Authorized redirect URIs</strong> add <code>https://developers.google.com/oauthplayground</code>.</li>
+          <li>Click <strong>Create</strong>. Copy or download the <strong>Client ID</strong> and <strong>Client secret</strong> and store them securely (for example in <code>SharedGlobals.properties</code> under <em>Connect → Files</em>).</li>
+        </ol>
+      </section>
+
+      <!-- ===== Section 4 ===== -->
+      <section id="generate-oauth-refresh-token" class="space-y-6">
+        <h2 class="text-xl font-semibold text-sky-700 flex items-center">
+          <span class="mr-2">4.</span> Generate OAuth Refresh Token
+        </h2>
+        <p>Use Google’s OAuth Playground to generate a long‑lived refresh token for RapidIdentity.</p>
+        <ol class="list-decimal list-inside space-y-2 pl-4">
+          <li>Visit <a href="https://developers.google.com/oauthplayground" class="text-sky-700 hover:underline" target="_blank" rel="noopener">https://developers.google.com/oauthplayground/</a>.</li>
+          <li>
+            Click the gear icon, enable <strong>Use your own OAuth credentials</strong>, and enter the Client ID and Client secret.
+            <br/>
+            <img src="assets/Pasted image 20250605090602.png" alt="OAuth Playground settings for custom credentials" class="my-2 rounded shadow"/>
+          </li>
+          <li>Expand <strong>Gmail API v1</strong>, select <code>https://www.googleapis.com/auth/gmail.send</code>, and click <strong>Authorize APIs</strong>.</li>
+          <li>
+            Confirm an authorization code appears, then click <strong>Exchange authorization code for tokens</strong>.
+            <br/>
+            <img src="assets/Pasted image 20250605092601.png" alt="Exchange authorization code for tokens" class="my-2 rounded shadow"/>
+          </li>
+          <li>
+            Copy the <strong>refresh token</strong> and add it to <code>SharedGlobals.properties</code> (<em>Connect → Files</em>). For example:
+            <pre class="bg-gray-100 p-3 rounded text-sm whitespace-pre-wrap"><code>smtpOAuthRefreshToken=2//04jMEgazbEPjSAMPLERAAGAQSNwF-L9IrPvJBtosnnxouM0_Z_By7XDWu15ACFpFu9hSAMPLE6EpCkJxIGeKukZMoAn2ggSAMPLE</code></pre>
+          </li>
+        </ol>
+      </section>
+
+      <!-- ===== Section 5 ===== -->
+      <section id="update-rapididentity-action-set" class="space-y-6">
+        <h2 class="text-xl font-semibold text-sky-700 flex items-center">
+          <span class="mr-2">5.</span> Update RapidIdentity Action Set
+        </h2>
+        <p>Replace the standard <code>sendEmail</code> action with the provided OAuth‑enabled action set so Connect uses the refresh token.</p>
+        <ol class="list-decimal list-inside space-y-2 pl-4">
+          <li>After the refresh token is saved, replace the existing <strong>sendEmail</strong> action in your workflow with the supplied action set.</li>
+        </ol>
+        <img src="assets/Pasted image 20250613130335.png" alt="SendEmail action set replacement" class="my-2 rounded shadow"/>
+      </section>
+    </main>
+
+    <!--==============  FOOTER  ==============-->
+    <footer class="bg-sky-700 text-white text-sm py-4">
+      <div class="max-w-7xl mx-auto px-4 text-center">
+        Documentation generated by RapidIdentity Help Docs
+      </div>
+    </footer>
+  </body>
+</html>
